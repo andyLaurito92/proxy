@@ -1,0 +1,18 @@
+El balanceador deberá guardar los datos de los requests en un json que tendrá el siguiente formato: 
+
+{
+    "datos": [
+        {
+            "request": "​127.0.0.1:8080/search/MLA97994",
+            "ipOrigen": "127.0.0.1",
+            "metodoHTTP": "PUT",
+            "hora": "08/09/2015 06:59:14"
+        },
+	{
+            "request": "​127.0.0.1:8080/search/MLA87112",
+            "ipOrigen": "192.168.1.10",
+            "metodoHTTP": "GET",
+            "hora": "07/09/2015 02:19:38"
+        }   
+    ]
+}
