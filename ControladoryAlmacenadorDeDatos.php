@@ -2,7 +2,7 @@
 
 class ControladorYAlmacenadorDeDatos{
 
-    var $rutaArchivoDeDatosDeUris = 'datosUris.json';
+    var $rutaArchivoDeDatosDeRequests = 'datosRequests.json';
 
     var $accesos_por_ip = array();
 
@@ -26,7 +26,7 @@ class ControladorYAlmacenadorDeDatos{
 
     public function iniciarTarea()
     {
-        if( ! $this->estaVacio($this->rutaArchivoDeDatosDeUris) )
+        if( ! $this->estaVacio($this->rutaArchivoDeDatosDeRequests) )
         {
             $this->procesarYAlmacenarDatosDelArchivoDeRequests();
 
@@ -39,9 +39,9 @@ class ControladorYAlmacenadorDeDatos{
 
         //Estas dos operaciones de a continuación deberian ser atómicas
 
-            $datos = file_get_contents($this->rutaArchivoDeDatosDeUris);
+            $datos = file_get_contents($this->rutaArchivoDeDatosDeRequests);
 
-            file_put_contents($this->rutaArchivoDeDatosDeUris, "");
+            file_put_contents($this->rutaArchivoDeDatosDeRequests, "");
 
         $json = json_decode($datos,true);
 
@@ -104,6 +104,7 @@ class ControladorYAlmacenadorDeDatos{
 
 }
 
+echo date('m/d/Y h:i:s a', time());
 
 $controlador = new ControladorYAlmacenadorDeDatos();
 
