@@ -1,0 +1,52 @@
+{
+  "datos": [
+    {
+      "request": "192.168.1.100:8080/search/",
+      "ipOrigen": "192.168.1.30",
+      "metodoHTTP": "GET",
+      "hora": "06/09/2015 13:10:10"
+    },
+    {
+      "request": "​127.0.0.1:8080/questions/MLA97994",
+      "ipOrigen": "127.0.0.1",
+      "metodoHTTP": "PUT",
+      "hora": "06/09/2015 13:10:11"
+    },
+    {
+      "request": "11:8080/questions/MLA97990",
+      "ipOrigen": "200.125.84.224",
+      "metodoHTTP": "DELETE",
+      "hora": "06/09/2015 13:10:12"
+    },
+    {
+      "request": "​127.0.0.1:8080/search/MLA97994",
+      "ipOrigen": "200.125.84.224",
+      "metodoHTTP": "PUT",
+      "hora": "06/09/2015 13:10:10"
+    },
+    {
+      "request": "​127.0.0.1:8080/questions/MLA97994",
+      "ipOrigen": "192.168.1.30",
+      "metodoHTTP": "GET",
+      "hora": "06/09/2015 13:10:10"
+    },
+    {
+      "request": "192.168.1.100/shipments/MLA97994",
+      "ipOrigen": "200.125.84.100",
+      "metodoHTTP": "GET",
+      "hora": "01/12/2015 07:55:09"
+    },
+    {
+      "request": "​127.0.0.1:8080/users/MLA97994",
+      "ipOrigen": "200.125.84.100",
+      "metodoHTTP": "PUT",
+      "hora": "06/09/2015 13:10:10"
+    },
+    {
+      "request": "​127.0.0.1:8080/shipments/MLA97967",
+      "ipOrigen": "127.0.0.1",
+      "metodoHTTP": "DELETE",
+      "hora": "08/09/2015 09:07:47"
+    }
+  ]
+}
