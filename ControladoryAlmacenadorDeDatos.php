@@ -1,8 +1,12 @@
 <?php
 
+require_once('BalanceadorDePedidos.php');
+
 class ControladorYAlmacenadorDeDatos{
 
     var $rutaArchivoDeDatosDeRequests = 'datosRequests.json';
+
+    var $unBalanceadorDePedidos;
 
     var $accesos_por_ip = array();
 
@@ -19,7 +23,9 @@ class ControladorYAlmacenadorDeDatos{
     const MAXIMA_CANTIDAD_ACCESOS_POR_RECURSO = 2;
 
 
-    public function ControladorYAlmacenadorDeDatos(){
+    public function ControladorYAlmacenadorDeDatos($unBalanceador){
+
+        $this->unBalanceadorDePedidos = $unBalanceador;
 
         $this->iniciarTarea();
     }
@@ -31,29 +37,21 @@ class ControladorYAlmacenadorDeDatos{
             $this->procesarYAlmacenarDatosDelArchivoDeRequests();
 
             $this->actualizarListaDeAccesosDelBalanceador();
+
+            $this->unBalanceadorDePedidos->imprimirAccesList();
         }
     }
 
 
-    function procesarYAlmacenarDatosDelArchivoDeRequests(){
+    function procesarYAlmacenarDatosDelArchivoDeRequests()
+    {
+        $listaJsons = $this->obtenerDatosDelArchivo();
 
-        //Estas dos operaciones de a continuación deberian ser atómicas
-
-            $datos = file_get_contents($this->rutaArchivoDeDatosDeRequests);
-
-            file_put_contents($this->rutaArchivoDeDatosDeRequests, "");
-
-        $json = json_decode($datos,true);
-
-        if( $json == NULL )     die("Ocurrio un error al tratar de decodificar el json");
-
-        $listaDeDatosAAlmacenar = $json['datos'];
-
-        foreach ( $listaDeDatosAAlmacenar as $jsonConDatos )
+        foreach ( $listaJsons as $jsonConDatos )
         {
             $recursoAccedido = $this->obtenerNombreDelRecurso($jsonConDatos['request']);
 
-            //Guardamos los datos en la base mysql
+            $this->almacenarDatosEnBase($recursoAccedido,$jsonConDatos);
 
             $this->incrementarAccesosDeLaIP($jsonConDatos['ipOrigen']);
 
@@ -61,33 +59,44 @@ class ControladorYAlmacenadorDeDatos{
 
         }
 
-        echo $json['datos'][0]['ipOrigen'];
-
-        var_dump($this->accesos_por_recurso);
-
     }
 
     function actualizarListaDeAccesosDelBalanceador()
     {
-        $this->verificarMaximosEn($this->accesos_por_ip,self::MAXIMA_CANTIDAD_ACCESOS_POR_IP);
+        $ipsQueSuperanElMaximo = $this->obtenerValoresQueSuperanElMaximo($this->accesos_por_ip,self::MAXIMA_CANTIDAD_ACCESOS_POR_IP);
 
-        $this->verificarMaximosEn($this->accesos_por_recurso,self::MAXIMA_CANTIDAD_ACCESOS_POR_RECURSO);
+        $recursosQueSuperanElMaximo = $this->obtenerValoresQueSuperanElMaximo($this->accesos_por_recurso,self::MAXIMA_CANTIDAD_ACCESOS_POR_RECURSO);
+
+        $this->unBalanceadorDePedidos->actualizarListaDeAccesosDeIps($ipsQueSuperanElMaximo);
+
+        $this->unBalanceadorDePedidos->actualizarLIstaDeAccesosDeRecursos($recursosQueSuperanElMaximo);
 
     }
 
-    function verificarMaximosEn($unArray,$unMaximo)
+    function obtenerDatosDelArchivo()
     {
-        foreach ( $unArray as $key=>$valor )
-        {
-            if ( $valor > $unMaximo )
-                echo 'Se supero el máximo de '.$key;
-        }
+        //Estas dos operaciones de a continuación deberian ser atómicas
+
+        $datos = file_get_contents($this->rutaArchivoDeDatosDeRequests);
+
+        file_put_contents($this->rutaArchivoDeDatosDeRequests, "");
+
+        $json = json_decode($datos,true);
+
+        if( $json == NULL )     die("Ocurrio un error al tratar de decodificar el json");
+
+        return $json['datos'];
     }
 
     function obtenerNombreDelRecurso($unaUri)
     {
         $path_url = parse_url($unaUri,PHP_URL_PATH);
         return explode('/',$path_url)[1] ;
+    }
+
+    function almacenarDatosEnBase($unRecurso,$unJsonConDatos)
+    {
+
     }
 
     function incrementarAccesosDeLaIP($unaIp)
@@ -97,6 +106,17 @@ class ControladorYAlmacenadorDeDatos{
         $this->accesos_por_ip[$unaIp] += 1;
     }
 
+    function obtenerValoresQueSuperanElMaximo($unArray,$unMaximo)
+    {
+        $arrayKeysQueSuperanElMaximo = array();
+        foreach ( $unArray as $key=>$valor )
+        {
+            if ( $valor > $unMaximo )
+                $arrayKeysQueSuperanElMaximo[$key] = $valor;
+        }
+        return $arrayKeysQueSuperanElMaximo;
+    }
+
     function estaVacio($unaPathAUnArchivo)
     {
         return filesize($unaPathAUnArchivo) == 0;
@@ -104,9 +124,9 @@ class ControladorYAlmacenadorDeDatos{
 
 }
 
-echo date('m/d/Y h:i:s a', time());
+echo 'Iniciando el controlador';
 
-$controlador = new ControladorYAlmacenadorDeDatos();
+$controlador = new ControladorYAlmacenadorDeDatos( new BalanceadorDePedidos() );
 
 
 ?>
