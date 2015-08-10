@@ -67,9 +67,9 @@ class ControladorYAlmacenadorDeDatos{
 
         $recursosQueSuperanElMaximo = $this->obtenerValoresQueSuperanElMaximo($this->accesos_por_recurso,self::MAXIMA_CANTIDAD_ACCESOS_POR_RECURSO);
 
-        $this->unBalanceadorDePedidos->actualizarListaDeAccesosDeIps($ipsQueSuperanElMaximo);
+        if( array_size($ipsQueSuperanElMaximo) > 0 )        $this->unBalanceadorDePedidos->actualizarListaDeAccesosDeIps($ipsQueSuperanElMaximo);
 
-        $this->unBalanceadorDePedidos->actualizarLIstaDeAccesosDeRecursos($recursosQueSuperanElMaximo);
+        if( array_size($recursosQueSuperanElMaximo) > 0 )    $this->unBalanceadorDePedidos->actualizarLIstaDeAccesosDeRecursos($recursosQueSuperanElMaximo);
 
     }
 
@@ -123,8 +123,6 @@ class ControladorYAlmacenadorDeDatos{
     }
 
 }
-
-echo 'Iniciando el controlador';
 
 $controlador = new ControladorYAlmacenadorDeDatos( new BalanceadorDePedidos() );
 
