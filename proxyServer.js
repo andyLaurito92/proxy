@@ -1,66 +1,52 @@
 // File /srv/server.js
 var http = require('http');
-var httpProxy = require('http-proxy');
-var url = require('url');
+var https = require('https');
+var url  = require('url');
+var sys  = require('sys');
 
-function server(ip, port)
+// revisar el siguiente link --> http://www.catonmat.net/http-proxy-in-nodejs/
+
+// Error: connect ECONNREFUSED ???
+
+function createProxyServerListeningIn(anIp, aPort)
 {
-        var http = require('http');
 
-        //Create a server
-        var server = http.createServer(function (request,response){
+    http.createServer(function(request, response) {
 
-            response.writeHeader(200, {"Content-Type": "text/html"});
-            response.write('It worked !' + request.url);
-            response.end();
+        var anUrlParsed = url.parse(request.url);
 
-        }).listen(port,ip);
+        sys.log(request.connection.remoteAddress + ": " + request.method + " " + anUrlParsed.host +' '+ anUrlParsed.path );
 
-        console.log('Server running at http://'+ip+':'+port+'/');
-
-
-        /*http.createServer(function (request, response) {
-
-            if(request.method =='GET') {
-
-                //We are going to assume that every request income is going to be to api.mercadolibre
-                var urlObj = url.parse(request.url);
-
-                console.log('urlObject: '+urlObj);
-                console.log('reqHost: '+request.headers['host']);
-                console.log('reqURL: '+request.headers['url']);
-                console.log('urlObj.domain: '+urlObj.domain);
-
-                request.headers['url'] = urlObj.href;
-
-                console.log('reqHost: '+request.headers['host']);
-                console.log('reqURL: '+request.headers['url']);
-
-            }
-
-        }).listen(port, ip);
-        console.log('Server running at http://'+ip+':'+port+'/');*/
-
-    /*httpProxy.createServer(function(req, res, proxy) {
-
-        var urlObj = url.parse(req.url);
-
-        req.headers['host'] = urlObj.host;
-        req.headers['url'] = urlObj.href;
-
-        proxy.proxyRequest(req, res, {
-            host: 'google.com.ar',
+        var proxy_request = http.request({
+            host:anUrlParsed.host,
+            path: anUrlParsed.path,
             port: 80,
-            enable : { xforward: true }
-        });
-    }).listen(ip,port);
-    console.log('Server running at http://'+ip+':'+port+'/');
-    */
+            accept: '*/*',
+            method: request.method,
+
+        }, function (proxy_response){
+            proxy_response.addListener('data', function(chunk) {
+                response.write(chunk, 'binary');
+            });
+            proxy_response.addListener('end', function() {
+                response.end();
+            });
+            response.writeHead(proxy_response.statusCode, proxy_response.headers);
+        })
+        .on('error',function(e){
+            console.log( e.stack );
+        })
+        .on('uncaughtException', function (err) {
+            console.log(err);
+        }).end();
+
+
+    }).listen(aPort,anIp);
+
 }
 
-// Create three servers for
-// the load balancer, listening on any
+// Create three servers for the load balancer, listening on any
 // network on the following three ports
-server('127.0.0.1', 9000);
-server('127.0.0.1', 9001);
-server('127.0.0.1', 9002);
+createProxyServerListeningIn('127.0.0.1', 9000);
+createProxyServerListeningIn('127.0.0.1', 9001);
+createProxyServerListeningIn('127.0.0.1', 9002);
